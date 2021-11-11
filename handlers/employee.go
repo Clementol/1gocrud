@@ -1,37 +1,45 @@
 package handlers
 
 import (
-	"context"
+	// "context"
+
 	"net/http"
 	"time"
+
+	// "time"
 
 	"github.com/Clementol/1gocrud/controllers"
 	"github.com/Clementol/1gocrud/database"
 	"github.com/Clementol/1gocrud/models"
-	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	"github.com/gin-gonic/gin"
 )
 
 func HandleGetAllEmployes(c *gin.Context) {
-	employees := controllers.GetAllEmployees()
-
+	employees, err := controllers.GetAllEmployees()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"staffs": employees})
 
 }
 
 func AddEmployeeHandler(c *gin.Context) {
-	employeeCollection := database.ConnectToDatase().Collection("employees")
+	col, ctx := database.ConnectToDatase()
+	employeeCollection := col.Collection("employees")
 	var employee models.Employee
 	var err error
 
 	if err := c.ShouldBind(&employee); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "failed", "error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	var staffEmailExist bson.M
-	_ = employeeCollection.FindOne(context.TODO(),
+	_ = employeeCollection.FindOne(ctx,
 		bson.M{"email": employee.Email}).Decode(&staffEmailExist)
 
 	// if err != nil {
@@ -42,7 +50,7 @@ func AddEmployeeHandler(c *gin.Context) {
 	if staffEmailExist != nil {
 
 		message := "staff with email already exists! "
-		c.JSON(http.StatusConflict, gin.H{"status": "failed", "error": message})
+		c.JSON(http.StatusConflict, gin.H{"error": message})
 		return
 	}
 	data := bson.M{
@@ -55,9 +63,10 @@ func AddEmployeeHandler(c *gin.Context) {
 		"updatedAt":  time.Now(),
 	}
 
-	_, err = employeeCollection.InsertOne(context.TODO(), data)
+	_, err = employeeCollection.InsertOne(ctx, data)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "failed", "message": err.Error()})
+		message := `staff not added ` + err.Error()
+		c.JSON(http.StatusBadRequest, gin.H{"error": message})
 		return
 	}
 	c.JSON(http.StatusCreated, "staff added")
@@ -65,14 +74,15 @@ func AddEmployeeHandler(c *gin.Context) {
 }
 
 func UpdateEmployee(c *gin.Context) {
-	employeeCollection := database.ConnectToDatase().Collection("employees")
+	col, ctx := database.ConnectToDatase()
+	employeeCollection := col.Collection("employees")
 	var employee models.Employee
 	var err error
 	id, _ := primitive.ObjectIDFromHex(c.Param("id"))
 
 	err = c.ShouldBind(&employee)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "failed", "message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -89,12 +99,12 @@ func UpdateEmployee(c *gin.Context) {
 	filter := bson.M{"_id": bson.M{"$eq": id}, "email": employee.Email}
 	update := bson.M{"$set": data}
 
-	err = employeeCollection.FindOneAndUpdate(context.TODO(),
+	err = employeeCollection.FindOneAndUpdate(ctx,
 		filter, update).Decode(&updatedEmployee)
 
 	if err != nil {
 		message := `staff with email does not exist!` + err.Error()
-		c.JSON(http.StatusBadRequest, gin.H{"status": "failed", "error": message})
+		c.JSON(http.StatusBadRequest, gin.H{"error": message})
 		return
 	}
 
@@ -103,7 +113,8 @@ func UpdateEmployee(c *gin.Context) {
 }
 
 func DeleteEmployee(c *gin.Context) {
-	employeeCollection := database.ConnectToDatase().Collection("employees")
+	col, ctx := database.ConnectToDatase()
+	employeeCollection := col.Collection("employees")
 
 	var err error
 	id, _ := primitive.ObjectIDFromHex(c.Param("id"))
@@ -112,12 +123,12 @@ func DeleteEmployee(c *gin.Context) {
 
 	filter := bson.M{"_id": bson.M{"$eq": id}}
 
-	err = employeeCollection.FindOneAndDelete(context.TODO(),
+	err = employeeCollection.FindOneAndDelete(ctx,
 		filter).Decode(&deletedEmployee)
 
 	if err != nil {
 		message := `staff with email does not exist! ` + err.Error()
-		c.JSON(http.StatusBadRequest, gin.H{"status": "failed", "error": message})
+		c.JSON(http.StatusBadRequest, gin.H{"error": message})
 		return
 	}
 

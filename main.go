@@ -12,6 +12,8 @@ func main() {
 	godotenv.Load()
 	router := gin.Default()
 	router.Use(cors.CORSMiddleware())
+	_, _ = database.ConnectToDatase()
+
 	api := router.Group("/api/staff")
 	{
 		api.GET("/all", handlers.HandleGetAllEmployes)
@@ -19,7 +21,6 @@ func main() {
 		api.PUT("/update/:id", handlers.UpdateEmployee)
 		api.DELETE("/delete/:id", handlers.DeleteEmployee)
 	}
-	database.ConnectToDatase()
 
 	router.Run()
 }

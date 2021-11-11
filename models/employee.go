@@ -2,7 +2,6 @@ package models
 
 import (
 	"time"
-	// "go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Employee struct {
@@ -13,4 +12,8 @@ type Employee struct {
 	Department string    `bson:"department"`
 	CreatedAt  time.Time `bson:"createdAt"`
 	UpdatedAt  time.Time `bson:"updatedAt"`
+}
+
+func (emp Employee) Name() string {
+	return emp.LastName + emp.FirstName
 }

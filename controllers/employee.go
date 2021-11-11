@@ -2,43 +2,47 @@ package controllers
 
 import (
 	"context"
-	"log"
 
 	"github.com/Clementol/1gocrud/database"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func GetAllEmployees() []*primitive.M {
+func GetAllEmployees() ([]*primitive.M, error) {
 
 	var employees []*bson.M
-	col := database.ConnectToDatase()
-
-	// defer cancel()
-	// defer client.Disconnect(ctx)
-
+	var err error
+	col, ctx := database.ConnectToDatase()
 	employeesCollection := col.Collection("employees")
-	cur, err := employeesCollection.Find(context.TODO(), bson.M{})
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err = cur.All(context.TODO(), &employees); err != nil {
-		log.Fatal(err.Error())
-	}
-	// defer cur.Close()
-	// for cur.Next(context.TODO()) {
-	// 	var elem models.Employee
-	// 	err := cur.Decode(&elem)
-	// 	if err != nil {
-	// 		log.Fatal(err.Error())
-	// 	}
-	// 	employees = append(employees, &elem)
-	// }
+	// ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 
-	// if err := cur.Err(); err != nil {
-	// 	log.Fatal(err.Error())
-	// }
-	// cur.Close(context.TODO())
-	return employees
+	findOption := []bson.M{
+		{"$project": bson.M{
+			"id": "$_id",
+			"name": bson.M{
+				"$concat": []string{
+					"$lastName", " ", "$firstName",
+				},
+			},
+			"lastName":   "$lastName",
+			"firstName":  "$firstName",
+			"email":      "$email",
+			"position":   "$position",
+			"department": "$department",
+		}}}
+
+	// employeesCollection := col.Collection("employees")
+	cur, err := employeesCollection.Aggregate(ctx, findOption)
+	if err != nil {
+		// log.Fatal(err)
+		return nil, err
+	}
+
+	if err = cur.All(context.TODO(), &employees); err != nil {
+		// log.Fatal(err.Error())
+		return nil, err
+	}
+
+	return employees, err
 
 }

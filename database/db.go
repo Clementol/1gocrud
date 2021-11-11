@@ -4,6 +4,9 @@ import (
 	"context"
 	"log"
 	"os"
+	"time"
+
+	// "time"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -14,19 +17,19 @@ import (
 // 	ConnectToDatase()
 // }
 
-func ConnectToDatase() *mongo.Database {
+func ConnectToDatase() (*mongo.Database, context.Context) {
 	mongodbUri := os.Getenv("MONGO_URI")
 
-	client, err := mongo.Connect(context.TODO(),
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+
+	client, err := mongo.Connect(ctx,
 		options.Client().ApplyURI(mongodbUri))
 	if err != nil {
 		panic(err.Error())
 	}
 
-	// var ctx, _ = context.WithTimeout(context.Background(), 10*time.Second)
-
 	// defer client.Disconnect(ctx)
-	if err := client.Ping(context.TODO(), readpref.Primary()); err != nil {
+	if err := client.Ping(ctx, readpref.Primary()); err != nil {
 		log.Printf(`Not connected to database! -> %v`, err.Error())
 		// panic(err.Error())
 
@@ -36,6 +39,6 @@ func ConnectToDatase() *mongo.Database {
 
 	col := client.Database("company_renaissance")
 	// defer cancel()
-	return col
+	return col, ctx
 
 }
