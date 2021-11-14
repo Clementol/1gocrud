@@ -13,9 +13,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-// type DatabaseInterface interface {
-// 	ConnectToDatase()
-// }
+type DatabaseInterface interface {
+	EmployeeCollection() *mongo.Collection
+}
+
+var db *mongo.Database
 
 func ConnectToDatase() (*mongo.Database, context.Context) {
 	mongodbUri := os.Getenv("MONGO_URI")
@@ -37,8 +39,12 @@ func ConnectToDatase() (*mongo.Database, context.Context) {
 		log.Printf(`Connected to database!`)
 	}
 
-	col := client.Database("company_renaissance")
+	db = client.Database("company_renaissance")
 	// defer cancel()
-	return col, ctx
+	return db, ctx
 
+}
+
+func EmployeeCollection() *mongo.Collection {
+	return (*mongo.Collection)(db.Collection("employees"))
 }

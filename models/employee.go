@@ -13,7 +13,3 @@ type Employee struct {
 	CreatedAt  time.Time `bson:"createdAt"`
 	UpdatedAt  time.Time `bson:"updatedAt"`
 }
-
-func (emp Employee) Name() string {
-	return emp.LastName + emp.FirstName
-}

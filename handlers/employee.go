@@ -1,12 +1,9 @@
 package handlers
 
 import (
-	// "context"
-
+	"context"
 	"net/http"
 	"time"
-
-	// "time"
 
 	"github.com/Clementol/1gocrud/controllers"
 	"github.com/Clementol/1gocrud/database"
@@ -28,8 +25,8 @@ func HandleGetAllEmployes(c *gin.Context) {
 }
 
 func AddEmployeeHandler(c *gin.Context) {
-	col, ctx := database.ConnectToDatase()
-	employeeCollection := col.Collection("employees")
+
+	employeeCollection := database.EmployeeCollection()
 	var employee models.Employee
 	var err error
 
@@ -39,7 +36,7 @@ func AddEmployeeHandler(c *gin.Context) {
 	}
 
 	var staffEmailExist bson.M
-	_ = employeeCollection.FindOne(ctx,
+	_ = employeeCollection.FindOne(context.TODO(),
 		bson.M{"email": employee.Email}).Decode(&staffEmailExist)
 
 	// if err != nil {
@@ -63,7 +60,7 @@ func AddEmployeeHandler(c *gin.Context) {
 		"updatedAt":  time.Now(),
 	}
 
-	_, err = employeeCollection.InsertOne(ctx, data)
+	_, err = employeeCollection.InsertOne(context.TODO(), data)
 	if err != nil {
 		message := `staff not added ` + err.Error()
 		c.JSON(http.StatusBadRequest, gin.H{"error": message})
@@ -74,8 +71,8 @@ func AddEmployeeHandler(c *gin.Context) {
 }
 
 func UpdateEmployee(c *gin.Context) {
-	col, ctx := database.ConnectToDatase()
-	employeeCollection := col.Collection("employees")
+
+	employeeCollection := database.EmployeeCollection()
 	var employee models.Employee
 	var err error
 	id, _ := primitive.ObjectIDFromHex(c.Param("id"))
@@ -99,7 +96,7 @@ func UpdateEmployee(c *gin.Context) {
 	filter := bson.M{"_id": bson.M{"$eq": id}, "email": employee.Email}
 	update := bson.M{"$set": data}
 
-	err = employeeCollection.FindOneAndUpdate(ctx,
+	err = employeeCollection.FindOneAndUpdate(context.TODO(),
 		filter, update).Decode(&updatedEmployee)
 
 	if err != nil {
@@ -113,8 +110,8 @@ func UpdateEmployee(c *gin.Context) {
 }
 
 func DeleteEmployee(c *gin.Context) {
-	col, ctx := database.ConnectToDatase()
-	employeeCollection := col.Collection("employees")
+
+	employeeCollection := database.EmployeeCollection()
 
 	var err error
 	id, _ := primitive.ObjectIDFromHex(c.Param("id"))
@@ -123,7 +120,7 @@ func DeleteEmployee(c *gin.Context) {
 
 	filter := bson.M{"_id": bson.M{"$eq": id}}
 
-	err = employeeCollection.FindOneAndDelete(ctx,
+	err = employeeCollection.FindOneAndDelete(context.TODO(),
 		filter).Decode(&deletedEmployee)
 
 	if err != nil {

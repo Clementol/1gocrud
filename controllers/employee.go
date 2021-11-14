@@ -12,9 +12,7 @@ func GetAllEmployees() ([]*primitive.M, error) {
 
 	var employees []*bson.M
 	var err error
-	col, ctx := database.ConnectToDatase()
-	employeesCollection := col.Collection("employees")
-	// ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	employeesCollection := database.EmployeeCollection()
 
 	findOption := []bson.M{
 		{"$project": bson.M{
@@ -32,7 +30,7 @@ func GetAllEmployees() ([]*primitive.M, error) {
 		}}}
 
 	// employeesCollection := col.Collection("employees")
-	cur, err := employeesCollection.Aggregate(ctx, findOption)
+	cur, err := employeesCollection.Aggregate(context.TODO(), findOption)
 	if err != nil {
 		// log.Fatal(err)
 		return nil, err

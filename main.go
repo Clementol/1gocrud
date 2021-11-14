@@ -8,6 +8,13 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// func WithDb(fn func(c *gin.Context, db *mongo.Database)
+//  db *mongo.Database func(c *gin.Context)  {
+// 	return func(c *gin.Context) error {
+// 		return fn(c, db)
+// 	}
+// }
+
 func main() {
 	godotenv.Load()
 	router := gin.Default()
