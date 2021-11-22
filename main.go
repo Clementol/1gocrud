@@ -19,7 +19,7 @@ func main() {
 	godotenv.Load()
 	router := gin.Default()
 	router.Use(cors.CORSMiddleware())
-	_, _ = database.ConnectToDatase()
+	database.ConnectToDatase()
 
 	api := router.Group("/api/staff")
 	{

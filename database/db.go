@@ -4,9 +4,6 @@ import (
 	"context"
 	"log"
 	"os"
-	"time"
-
-	// "time"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -19,19 +16,20 @@ type DatabaseInterface interface {
 
 var db *mongo.Database
 
-func ConnectToDatase() (*mongo.Database, context.Context) {
+func ConnectToDatase() {
 	mongodbUri := os.Getenv("MONGO_URI")
 
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	// ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 
-	client, err := mongo.Connect(ctx,
+	client, err := mongo.Connect(context.TODO(),
 		options.Client().ApplyURI(mongodbUri))
 	if err != nil {
+
 		panic(err.Error())
 	}
 
 	// defer client.Disconnect(ctx)
-	if err := client.Ping(ctx, readpref.Primary()); err != nil {
+	if err := client.Ping(context.TODO(), readpref.Primary()); err != nil {
 		log.Printf(`Not connected to database! -> %v`, err.Error())
 		// panic(err.Error())
 
@@ -41,10 +39,10 @@ func ConnectToDatase() (*mongo.Database, context.Context) {
 
 	db = client.Database("company_renaissance")
 	// defer cancel()
-	return db, ctx
+	// return db, ctx
 
 }
 
 func EmployeeCollection() *mongo.Collection {
-	return (*mongo.Collection)(db.Collection("employees"))
+	return db.Collection("employees")
 }

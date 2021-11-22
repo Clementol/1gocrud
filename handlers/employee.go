@@ -8,6 +8,9 @@ import (
 	"github.com/Clementol/1gocrud/controllers"
 	"github.com/Clementol/1gocrud/database"
 	"github.com/Clementol/1gocrud/models"
+	"github.com/Clementol/1gocrud/validators"
+	"github.com/go-playground/locales/en"
+	ut "github.com/go-playground/universal-translator"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
@@ -15,6 +18,7 @@ import (
 )
 
 func HandleGetAllEmployes(c *gin.Context) {
+
 	employees, err := controllers.GetAllEmployees()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -26,12 +30,25 @@ func HandleGetAllEmployes(c *gin.Context) {
 
 func AddEmployeeHandler(c *gin.Context) {
 
-	employeeCollection := database.EmployeeCollection()
 	var employee models.Employee
 	var err error
 
+	employeeCollection := database.EmployeeCollection()
+
 	if err := c.ShouldBind(&employee); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	en := en.New()
+	uni := ut.New(en, en)
+	trans, _ := uni.GetTranslator("en")
+
+	err = validators.EmployeeValidation(trans, employee)
+
+	if err != nil {
+
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 		return
 	}
 
