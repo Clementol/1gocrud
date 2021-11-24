@@ -50,10 +50,10 @@ func (v LengthValidator) Validate(val interface{}) (bool, error) {
 		return false, fmt.Errorf("is required")
 	}
 
-	numCheck := regexp.MustCompile(`[a-zA-Z]`)
+	numCheck := regexp.MustCompile(`[0-9]+`)
 
-	if !numCheck.MatchString(val.(string)) {
-
+	fmt.Println(val)
+	if numCheck.MatchString(val.(string)) {
 		return false, fmt.Errorf("must be text")
 
 	}
@@ -79,14 +79,15 @@ func (v EmailValidator) Validate(val interface{}) (bool, error) {
 func getValidatorFromTag(tag string) Validator {
 
 	args := strings.Split(tag, ",")
-	required, _ := regexp.MatchString("required", tag)
+	// required, _ := regexp.MatchString("required", tag)
 	minMax, _ := regexp.MatchString("min=([0-9]+),max=([0-9]+)", tag)
 	email, _ := regexp.MatchString("email", tag)
 
+	fmt.Println(minMax)
 	switch {
-	case required:
-		validator := RequiredValidator{}
-		return validator
+	// case required, minMax:
+	// 	validator := RequiredValidator{}
+	// 	return validator
 	case minMax:
 		validator := LengthValidator{}
 		fmt.Sscanf(strings.Join(args[1:], ","), "min=%d,max=%d",
