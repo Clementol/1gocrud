@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/Clementol/1gocrud/models"
-	ut "github.com/go-playground/universal-translator"
 	// "github.com/thedevsaddam/govalidator"
 )
 
@@ -85,9 +84,6 @@ func getValidatorFromTag(tag string) Validator {
 
 	fmt.Println(minMax)
 	switch {
-	// case required, minMax:
-	// 	validator := RequiredValidator{}
-	// 	return validator
 	case minMax:
 		validator := LengthValidator{}
 		fmt.Sscanf(strings.Join(args[1:], ","), "min=%d,max=%d",
@@ -102,7 +98,7 @@ func getValidatorFromTag(tag string) Validator {
 
 }
 
-func EmployeeValidation(trans ut.Translator, employee models.Employee) error {
+func EmployeeValidation(employee models.Employee) error {
 	errs := []error{}
 	var errMsg error
 	v := reflect.ValueOf(employee)
@@ -123,6 +119,7 @@ func EmployeeValidation(trans ut.Translator, employee models.Employee) error {
 	}
 
 	fmt.Println(errs)
+
 	if len(errs) > 0 {
 		errMsg = errs[0]
 	}

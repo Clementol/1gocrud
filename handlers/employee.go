@@ -9,8 +9,6 @@ import (
 	"github.com/Clementol/1gocrud/database"
 	"github.com/Clementol/1gocrud/models"
 	"github.com/Clementol/1gocrud/validators"
-	"github.com/go-playground/locales/en"
-	ut "github.com/go-playground/universal-translator"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
@@ -40,11 +38,7 @@ func AddEmployeeHandler(c *gin.Context) {
 		return
 	}
 
-	en := en.New()
-	uni := ut.New(en, en)
-	trans, _ := uni.GetTranslator("en")
-
-	err = validators.EmployeeValidation(trans, employee)
+	err = validators.EmployeeValidation(employee)
 
 	if err != nil {
 
